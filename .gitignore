@@ -1,0 +1,10 @@
+*.ckpt
+*.h5
+*.npy
+*.csv
+*.png
+*.jpeg
+*.jpg
+
+.idea
+.ipynb*
