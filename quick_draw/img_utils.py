@@ -31,7 +31,7 @@ def drop_draw_cv2(raw_strokes, img_size=256, lw=8):
     img = np.zeros((RAW_IMG_SIZE, RAW_IMG_SIZE), np.uint8)
     for t, stroke in enumerate(raw_strokes):
         for i in range(len(stroke[0]) - 1):
-            if i == 0 or i == len(stroke[0]) - 2:
+            if i < 3:
                 color = 255
                 _ = cv2.line(img, (stroke[0][i], stroke[1][i]),
                              (stroke[0][i + 1], stroke[1][i + 1]), color, lw)
@@ -59,9 +59,10 @@ def build_image(df, img_size, lw=6, time_color=True):
 def image_generator_xd(img_size, batch_size, ks, lw=6, time_color=True):
     while True:
         for k in np.random.permutation(ks):
-            with open('train_file_log.txt', 'a+') as f:
-                f.write('train_k{}.csv.\n'.format(k))
-            filename = os.path.join(DP_DIR, 'train_k{}.csv.gz'.format(k))
+            with open('FullSetTrainLog.txt', 'a+') as f:
+                f.write('complete_train_k{}.csv.\n'.format(k))
+            filename = os.path.join(DP_DIR, 'complete_train_k{}.csv.gz'.format(k))
+            print(filename)
             for df in pd.read_csv(filename, chunksize=batch_size):
                 df['drawing'] = df['drawing'].apply(ast.literal_eval)
                 x = build_image(df, img_size, lw=lw, time_color=time_color)
@@ -71,11 +72,11 @@ def image_generator_xd(img_size, batch_size, ks, lw=6, time_color=True):
 
 
 def val_image_generator_xd(img_size, lw=6, time_color=True, batch_size=100):
-    filename = os.path.join(DP_DIR, 'train_k{}.csv.gz'.format(99))
+    filename = os.path.join(DP_DIR, 'complete_train_k{}.csv.gz'.format(99))
     counter = 0
     factor = 2
     for df in pd.read_csv(filename, chunksize=batch_size * factor):
-        if counter >= NUM_CLASS // factor:
+        if counter >= NUM_CLASS // factor // 2:
             return None
         df['drawing'] = df['drawing'].apply(ast.literal_eval)
         x = build_image(df, img_size, lw=lw, time_color=time_color)
@@ -99,3 +100,10 @@ def df_to_image_array_xd(df, img_size, lw=6, time_color=True):
     x = build_image(df, img_size, lw=lw, time_color=time_color)
     x = x / 255.
     return x
+
+
+def flip(x, dim):
+    indices = [slice(None)] * x.dim()
+    indices[dim] = torch.arange(x.size(dim) - 1, -1, -1,
+                                dtype=torch.long, device=x.device)
+    return x[tuple(indices)]

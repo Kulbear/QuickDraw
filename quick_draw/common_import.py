@@ -18,5 +18,3 @@ import pickle
 import random
 import datetime as dt
 from collections import defaultdict, OrderedDict
-
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
