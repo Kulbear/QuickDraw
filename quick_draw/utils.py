@@ -43,8 +43,15 @@ def f2cat(filename: str) -> str:
 
 
 def list_all_categories() -> list:
-    files = os.listdir(os.path.join(INPUT_DIR, 'train_simplified'))
-    return sorted([f2cat(f) for f in files], key=str.lower)
+    try:
+        with open(CATEGORY_LIST, 'rb') as f:
+            result = pickle.load(f)
+    except FileNotFoundError:
+        files = os.listdir(os.path.join(INPUT_DIR, 'train_simplified'))
+        result = sorted([f2cat(f) for f in files], key=str.lower)
+        with open(CATEGORY_LIST, 'wb') as f:
+            pickle.dump(result, f)
+    return result
 
 
 class AverageMeter:
